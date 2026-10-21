@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>e-Repo Perancangan — PPD Muar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="spm-app"></div>
+
+<!-- Custom Alert Dialog Markup -->
+<div id="siscSystemAlert">
+  <div class="sisc-alert-backdrop"></div>
+  <div class="sisc-alert-box">
+    <div class="sisc-alert-icon">!</div>
+    <div>
+      <div class="sisc-alert-title">MESEJ SISTEM</div>
+      <div class="sisc-alert-message" id="siscAlertText"></div>
+    </div>
+    <button class="sisc-alert-ok" onclick="closeSiscAlert()" type="button">OK</button>
+  </div>
+</div>
+
+<!-- Custom Delete Confirmation Dialog Markup -->
+<div id="siscConfirmModal">
+  <div class="sisc-alert-backdrop"></div>
+  <div class="sisc-confirm-box">
+    <div class="sisc-confirm-title">PADAM PAUTAN?</div>
+    <div class="sisc-confirm-message">Adakah anda pasti ingin memadam pautan ini secara kekal?</div>
+    <div class="sisc-confirm-actions">
+      <button class="btn-cancel-del" onclick="closeConfirmModal()" type="button">BATAL</button>
+      <button class="btn-execute-del" onclick="executeDelete()" type="button">PADAM</button>
+    </div>
+  </div>
+</div>
+
+<!-- Load Supabase -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="app.js" defer></script>
+
+</body>
+</html>
