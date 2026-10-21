@@ -2,11 +2,11 @@
   // =======================================================
   // KUNCI API SUPABASE ANDA
   // =======================================================
-  const SUPABASE_URL = "https://YOUR-PROJECT-ID.supabase.co";
-  const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
-
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+  // 1. Initialize Supabase
+  const supabaseUrl = 'https://pqukdhyuxhitusvbevnc.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxdWtkaHl1eGhpdHVzdmJldm5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1NDMxMjIsImV4cCI6MjEwODExOTEyMn0.A8oIrN8W05OG_91PRGO1GRMGfVRQJguBEQu6Ym43Dq8';
+  const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
+  
   // Kategori Khas Untuk Sektor Perancangan
   const CATEGORIES = [
     "Data & Unjuran Sekolah",
