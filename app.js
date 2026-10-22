@@ -345,10 +345,11 @@ const sb = window.supabase.createClient(
       view = { screen: "home" };
       searchQuery = "";
       render();
-    } else if (action === "cat") {
+    }
+    else if (action === "cat") {
       goCategory(CATEGORIES[Number(el.dataset.i)]);
-    
-    } else if (action === "folder") {
+    } 
+    else if (action === "folder") {
       const folder = resources.find(
         r => String(r.id) === el.dataset.id
       );
@@ -360,6 +361,17 @@ const sb = window.supabase.createClient(
     } else if (action === "add") {
       editingResource = null;
       view.showModal = true;
+      view.formType = "choose";
+      render();
+    } else if (action === "add-folder") {
+      editingResource = null;
+      view.showModal = true;
+      view.formType = "folder";
+      render();
+    } else if (action === "add-document") {
+      editingResource = null;
+      view.showModal = true;
+      view.formType = "document";
       render();
     } else if (action === "edit") {
       editingResource =
@@ -577,9 +589,9 @@ function galleryHtml() {
             value="${esc(searchQuery)}"
             aria-label="Cari tajuk">
 
-          <button type="button" class="btn-add" data-action="add">
-            + Tambah
-          </button>
+             <button type="button" class="btn-add" data-action="add">
+           + Tambah
+        </button>
         </div>
       </div>
 
@@ -589,48 +601,93 @@ function galleryHtml() {
     </div>`;
   }
 
-  function modal() {
-    const r = editingResource;
+ 
+function modal() {
+  const r = editingResource;
+  const formType = editingResource ? "document" : (view.formType || "choose");
 
+  // Choose what to add
+  if (formType === "choose") {
     return `<div class="modal-overlay" data-action="overlay">
       <div class="modal-box">
-        <h3>${r ? "KEMASKINI" : "TAMBAH"} PAUTAN</h3>
+        <h3>TAMBAH SUMBER</h3>
+        <p>Pilih apa yang anda mahu tambah.</p>
 
-        <div class="modal-field">
-          <label for="f-title">Tajuk</label>
-          <input id="f-title" value="${esc(r?.title)}">
-        </div>
-
-        <div class="modal-field">
-          <label for="f-link">Pautan Drive</label>
-          <input
-            id="f-link"
-            value="${esc(r?.link)}"
-            placeholder="https://">
-        </div>
-
-        <div class="modal-field">
-          <label for="f-year">Tahun</label>
-          <input
-            id="f-year"
-            type="number"
-            value="${esc(r?.year)}">
-        </div>
-
-        <div class="modal-field">
-          <label for="f-author">Dimuat Naik Oleh</label>
-          <input
-            id="f-author"
-            value="${esc(r?.uploaded_by)}">
+        <div class="modal-actions">
+          <button type="button" data-action="add-folder">
+            📁 Cipta Folder
+          </button>
+          <button type="button" class="btn-save" data-action="add-document">
+            📄 Tambah Dokumen
+          </button>
         </div>
 
         <div class="modal-actions">
           <button type="button" data-action="close-modal">Batal</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Create folder form
+  if (formType === "folder") {
+    return `<div class="modal-overlay" data-action="overlay">
+      <div class="modal-box">
+        <h3>CIPTA FOLDER</h3>
+
+        <div class="modal-field">
+          <label for="f-title">Nama Folder</label>
+          <input id="f-title" placeholder="Contoh: 2026">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" data-action="add">Kembali</button>
           <button type="button" class="btn-save" data-action="save">Simpan</button>
         </div>
       </div>
     </div>`;
   }
+
+  // Add or edit document form
+  return `<div class="modal-overlay" data-action="overlay">
+    <div class="modal-box">
+      <h3>${r ? "KEMASKINI" : "TAMBAH"} DOKUMEN</h3>
+
+      <div class="modal-field">
+        <label for="f-title">Tajuk</label>
+        <input id="f-title" value="${esc(r?.title)}">
+      </div>
+
+      <div class="modal-field">
+        <label for="f-link">Pautan Drive</label>
+        <input
+          id="f-link"
+          value="${esc(r?.link)}"
+          placeholder="https://">
+      </div>
+
+      <div class="modal-field">
+        <label for="f-year">Tahun</label>
+        <input
+          id="f-year"
+          type="number"
+          value="${esc(r?.year)}">
+      </div>
+
+      <div class="modal-field">
+        <label for="f-author">Dimuat Naik Oleh</label>
+        <input
+          id="f-author"
+          value="${esc(r?.uploaded_by)}">
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" data-action="close-modal">Batal</button>
+        <button type="button" class="btn-save" data-action="save">Simpan</button>
+      </div>
+    </div>
+  </div>`;
+}
 
   // ---------- Initialise website ----------
 
