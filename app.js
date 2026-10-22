@@ -386,16 +386,47 @@ async function saveResource(fields) {
     else if (action === "cat") {
       goCategory(CATEGORIES[Number(el.dataset.i)]);
     } 
-    else if (action === "folder") {
-      const folder = resources.find(
-        r => String(r.id) === el.dataset.id
-      );
+   
+else if (action === "folder") {
+  const folder = resources.find(
+    r => String(r.id) === el.dataset.id
+  );
 
-      if (folder && folder.item_type === "folder") {
-        openFolder(folder);
-      }
+  if (folder && folder.item_type === "folder") {
+    openFolder(folder);
+  }
 
-    } else if (action === "add") {
+} else if (action === "parent") {
+  const currentFolder = resources.find(
+    r => String(r.id) === String(view.folderId)
+  );
+
+  if (currentFolder) {
+    const parentId = currentFolder.parent_id;
+
+    view.folderId = parentId ?? null;
+    searchQuery = "";
+    render();
+  } else {
+    view.folderId = null;
+    searchQuery = "";
+    render();
+  }
+
+} else if (action === "open-crumb") {
+  const folder = resources.find(
+    r => String(r.id) === el.dataset.id
+  );
+
+  if (folder && folder.item_type === "folder") {
+    view.folderId = folder.id;
+    searchQuery = "";
+    render();
+  }
+
+}
+ 
+    else if (action === "add") {
       editingResource = null;
       view.showModal = true;
       view.formType = "choose";
