@@ -4,12 +4,13 @@
   // Versi ujian tanpa paparan log masuk.
   // Akses database masih tertakluk kepada polisi Supabase RLS.
 
-  const supabaseUrl = "https://pqukdhyuxhitusvbevnc.supabase.co/rest/v1/";
+const supabaseUrl = "https://pqukdhyuxhitusvbevnc.supabase.co";
+const supabaseKey = "sb_publishable_ZfthgGwzgijXsj-1iEL9kg__e-thY1R";
 
-  // Kekalkan anon/publishable key projek Supabase anda.
-  const supabaseKey = "sb_publishable_ZfthgGwzgijXsj-1iEL9kg__e-thY1R";
-
-  const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
+const sb = window.supabase.createClient(
+  supabaseUrl,
+  supabaseKey
+);
 
   const CATEGORIES = [
     "Data & Unjuran Sekolah",
