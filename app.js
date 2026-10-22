@@ -433,8 +433,13 @@ const sb = window.supabase.createClient(
     const q = searchQuery.toLowerCase();
 
     const filtered = resources.filter(r =>
-      String(r.title ?? "").toLowerCase().includes(q)
-    );
+  String(r.title ?? "").toLowerCase().includes(q) &&
+  (
+    r.parent_id == null
+      ? view.folderId == null
+      : String(r.parent_id) === String(view.folderId)
+  )
+);
 
     if (!filtered.length) {
       return `<div class="activity-empty">Tiada rekod dijumpai.</div>`;
