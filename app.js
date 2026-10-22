@@ -7,7 +7,7 @@
   const supabaseUrl = "https://pqukdhyuxhitusvbevnc.supabase.co/rest/v1/";
 
   // Kekalkan anon/publishable key projek Supabase anda.
-  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxdWtkaHl1eGhpdHVzdmJldm5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1NDMxMjIsImV4cCI6MjEwODExOTEyMn0.A8oIrN8W05OG_91PRGO1GRMGfVRQJguBEQu6Ym43Dq8";
+  const supabaseKey = "sb_publishable_ZfthgGwzgijXsj-1iEL9kg__e-thY1R";
 
   const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
 
