@@ -271,7 +271,6 @@ async function saveResource(fields) {
 
   // ---------- Add / Edit ----------
 
-
   async function onSave(btn) {
     if (saving) return;
   
@@ -279,7 +278,7 @@ async function saveResource(fields) {
     const title = titleInput ? titleInput.value.trim() : "";
   
     if (!title) {
-      showSiscAlert("Sila masukkan tajuk atau nama folder.");
+      showSiscAlert("Please enter a title or folder name.");
       return;
     }
   
@@ -289,7 +288,7 @@ async function saveResource(fields) {
   
     if (isFolder) {
       fields = {
-        title,
+        title: title,
         link: "",
         year: "",
         author: "Staf Perancangan",
@@ -305,7 +304,7 @@ async function saveResource(fields) {
       const author = authorInput ? authorInput.value.trim() : "";
   
       if (!link) {
-        showSiscAlert("Sila isi pautan Google Drive.");
+        showSiscAlert("Please enter the Google Drive link.");
         return;
       }
   
@@ -313,28 +312,28 @@ async function saveResource(fields) {
   
       if (!url) {
         showSiscAlert(
-          "Pautan mesti bermula dengan https:// atau http://"
+          "The link must start with https:// or http://"
         );
         return;
       }
   
       if (year && !Number.isInteger(Number(year))) {
-        showSiscAlert("Sila masukkan tahun yang sah.");
+        showSiscAlert("Please enter a valid year.");
         return;
       }
   
       fields = {
-        title,
+        title: title,
         link: url,
-        year,
-        author,
+        year: year,
+        author: author,
         item_type: "document"
       };
     }
   
     saving = true;
     btn.disabled = true;
-    btn.textContent = "Menyimpan...";
+    btn.textContent = "Saving...";
   
     try {
       const ok = await saveResource(fields);
@@ -350,7 +349,9 @@ async function saveResource(fields) {
     } finally {
       saving = false;
   
-      const saveButton = document.querySelector('[data-action="save"]');
+      const saveButton = document.querySelector(
+        '[data-action="save"]'
+      );
   
       if (saveButton) {
         saveButton.disabled = false;
@@ -358,8 +359,7 @@ async function saveResource(fields) {
       }
     }
   }
-
-
+  
   // ---------- Event delegation ----------
 
   root.addEventListener("click", e => {
