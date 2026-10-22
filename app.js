@@ -437,9 +437,7 @@ const sb = window.supabase.createClient(
 
     return filtered.map(r => {
       const href = safeUrl(r.link);
-      const thumb = getDriveThumbnailUrl(r.link);
       const id = esc(r.id);
-
       return `<div class="activity-card">
         
       <div class="activity-image">
