@@ -174,56 +174,61 @@ const sb = window.supabase.createClient(
     }
   }
 
-  async function saveResource(fields) {
-    const payload = {
-      category: view.category,
-      title: fields.title,
-      link: fields.link,
-      year: fields.year ? Number(fields.year) : null,
-      uploaded_by: fields.author || "Staf Perancangan"
-    };
+  
+async function saveResource(fields) {
+  const payload = {
+    category: view.category,
+    title: fields.title,
+    link: fields.link || "",
+    year: fields.year ? Number(fields.year) : null,
+    uploaded_by: fields.author || "Staf Perancangan",
+    item_type: fields.item_type || editingResource?.item_type || "document",
+    parent_id: editingResource
+      ? editingResource.parent_id
+      : (view.folderId ?? null)
+  };
 
-    try {
-      let query;
+  try {
+    let query;
 
-      if (editingResource) {
-        query = sb
-          .from("resources")
-          .update(payload)
-          .eq("id", editingResource.id);
-      } else {
-        query = sb
-          .from("resources")
-          .insert(payload);
-      }
+    if (editingResource) {
+      query = sb
+        .from("resources")
+        .update(payload)
+        .eq("id", editingResource.id);
+    } else {
+      query = sb
+        .from("resources")
+        .insert(payload);
+    }
 
-      const { data, error } = await query.select();
+    const { data, error } = await query.select();
 
-      if (error) {
-        showSiscAlert(
-          (editingResource
-            ? "Gagal mengemaskini: "
-            : "Gagal menambah: ") + error.message
-        );
-        return false;
-      }
-
-      if (!data || data.length === 0) {
-        showSiscAlert(
-          "Tiada rekod disimpan. Semak polisi kebenaran Supabase (RLS)."
-        );
-        return false;
-      }
-
-      return true;
-    } catch (error) {
+    if (error) {
       showSiscAlert(
-        "Ralat semasa menyimpan: " +
-        (error.message || "Sila cuba lagi.")
+        (editingResource
+          ? "Gagal mengemaskini: "
+          : "Gagal menambah: ") + error.message
       );
       return false;
     }
+
+    if (!data || data.length === 0) {
+      showSiscAlert(
+        "Tiada rekod disimpan. Semak polisi kebenaran Supabase (RLS)."
+      );
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    showSiscAlert(
+      "Ralat semasa menyimpan: " +
+      (error.message || "Sila cuba lagi.")
+    );
+    return false;
   }
+}
 
   // ---------- Navigation ----------
 
@@ -266,62 +271,94 @@ const sb = window.supabase.createClient(
 
   // ---------- Add / Edit ----------
 
+
   async function onSave(btn) {
     if (saving) return;
-
-    const title = document.getElementById("f-title").value.trim();
-    const link = document.getElementById("f-link").value.trim();
-    const year = document.getElementById("f-year").value.trim();
-    const author = document.getElementById("f-author").value.trim();
-
-    if (!title || !link) {
-      showSiscAlert("Sila isi tajuk dan pautan.");
+  
+    const titleInput = document.getElementById("f-title");
+    const title = titleInput ? titleInput.value.trim() : "";
+  
+    if (!title) {
+      showSiscAlert("Sila masukkan tajuk atau nama folder.");
       return;
     }
-
-    const url = safeUrl(link);
-
-    if (!url) {
-      showSiscAlert("Pautan mesti bermula dengan https:// atau http://");
-      return;
-    }
-
-    if (year && !Number.isInteger(Number(year))) {
-      showSiscAlert("Sila masukkan tahun yang sah.");
-      return;
-    }
-
-    saving = true;
-    btn.disabled = true;
-    btn.textContent = "Menyimpan...";
-
-    try {
-      const ok = await saveResource({
+  
+    const isFolder = !editingResource && view.formType === "folder";
+  
+    let fields;
+  
+    if (isFolder) {
+      fields = {
+        title,
+        link: "",
+        year: "",
+        author: "Staf Perancangan",
+        item_type: "folder"
+      };
+    } else {
+      const linkInput = document.getElementById("f-link");
+      const yearInput = document.getElementById("f-year");
+      const authorInput = document.getElementById("f-author");
+  
+      const link = linkInput ? linkInput.value.trim() : "";
+      const year = yearInput ? yearInput.value.trim() : "";
+      const author = authorInput ? authorInput.value.trim() : "";
+  
+      if (!link) {
+        showSiscAlert("Sila isi pautan Google Drive.");
+        return;
+      }
+  
+      const url = safeUrl(link);
+  
+      if (!url) {
+        showSiscAlert(
+          "Pautan mesti bermula dengan https:// atau http://"
+        );
+        return;
+      }
+  
+      if (year && !Number.isInteger(Number(year))) {
+        showSiscAlert("Sila masukkan tahun yang sah.");
+        return;
+      }
+  
+      fields = {
         title,
         link: url,
         year,
-        author
-      });
-
+        author,
+        item_type: "document"
+      };
+    }
+  
+    saving = true;
+    btn.disabled = true;
+    btn.textContent = "Menyimpan...";
+  
+    try {
+      const ok = await saveResource(fields);
+  
       if (!ok) return;
-
+  
       view.showModal = false;
+      view.formType = null;
       editingResource = null;
-
+  
       await loadResources(view.category);
       render();
     } finally {
       saving = false;
-
-      // Jika modal masih terbuka, benarkan pengguna cuba semula.
+  
       const saveButton = document.querySelector('[data-action="save"]');
-
+  
       if (saveButton) {
         saveButton.disabled = false;
         saveButton.textContent = "Simpan";
       }
     }
   }
+
 
   // ---------- Event delegation ----------
 
