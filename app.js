@@ -455,52 +455,96 @@ const sb = window.supabase.createClient(
     </div>`;
   }
 
-  function galleryHtml() {
-    if (loading) {
-      return `<div class="activity-empty">Memuatkan...</div>`;
-    }
+  
+function galleryHtml() {
+  if (loading) {
+    return `<div class="activity-empty">Memuatkan...</div>`;
+  }
 
-    const q = searchQuery.toLowerCase();
+  const q = searchQuery.toLowerCase();
 
-    const filtered = resources.filter(r =>
-  String(r.title ?? "").toLowerCase().includes(q) &&
-  (
-    r.parent_id == null
-      ? view.folderId == null
-      : String(r.parent_id) === String(view.folderId)
-  )
-);
+  const filtered = resources.filter(r =>
+    String(r.title ?? "").toLowerCase().includes(q) &&
+    (
+      r.parent_id == null
+        ? view.folderId == null
+        : String(r.parent_id) === String(view.folderId)
+    )
+  );
 
-    if (!filtered.length) {
-      return `<div class="activity-empty">Tiada rekod dijumpai.</div>`;
-    }
+  if (!filtered.length) {
+    return `<div class="activity-empty">Tiada rekod dijumpai.</div>`;
+  }
 
-    return filtered.map(r => {
-      const href = safeUrl(r.link);
-      const id = esc(r.id);
-      return `<div class="activity-card">
-        
-      <div class="activity-image">
-        <div class="drive-preview">
-          <div class="drive-icon" aria-hidden="true">
-            <svg viewBox="0 0 48 48" width="48" height="48">
-              <path fill="#4285F4" d="M16 6h10L11 33H1z"/>
-              <path fill="#34A853" d="M16 6h10l16 27H31z"/>
-              <path fill="#FBBC04" d="M1 33h30l-5 9H6z"/>
-              <path fill="#188038" d="M31 33h11l-5 9H26z"/>
-            </svg>
+  return filtered.map(r => {
+    const id = esc(r.id);
+    const title = esc(r.title);
+
+    // Folder cards open inside e-Repo.
+    if (r.item_type === "folder") {
+      return `
+        <div class="activity-card folder-card">
+          <button
+            type="button"
+            class="folder-open"
+            data-action="folder"
+            data-id="${id}"
+            aria-label="Buka folder ${title}">
+            <div class="activity-image">
+              <div class="drive-preview">
+                <div class="drive-icon" aria-hidden="true">
+                  <svg viewBox="0 0 48 48" width="48" height="48">
+                    <path fill="#4285F4"
+                      d="M4 12a4 4 0 0 1 4-4h12l4 5h16a4 4 0 0 1 4 4v19a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/>
+                    <path fill="#A1C2FA"
+                      d="M4 19h40l-5 17a4 4 0 0 1-4 3H8a4 4 0 0 1-4-4z"/>
+                  </svg>
+                </div>
+                <span class="drive-label">FOLDER</span>
+                <span class="drive-subtitle">Click to open</span>
+              </div>
+            </div>
+            <div class="activity-body">
+              <h3>${title}</h3>
+              <div class="activity-meta">
+                ${r.year ? `Tahun: ${esc(r.year)}<br>` : ""}
+                Folder
+              </div>
+            </div>
+          </button>
+
+          <div class="activity-actions">
+            <button type="button" data-action="edit" data-id="${id}">Edit</button>
+            <button type="button" class="btn-del" data-action="del" data-id="${id}">Padam</button>
           </div>
-          <span class="drive-label">GOOGLE DRIVE</span>
-          <span class="drive-subtitle">Folder &amp; Documents</span>
-        </div>
-      </div>
+        </div>`;
+    }
 
+    // Document cards retain the existing Google Drive link.
+    const href = safeUrl(r.link);
+
+    return `
+      <div class="activity-card">
+        <div class="activity-image">
+          <div class="drive-preview">
+            <div class="drive-icon" aria-hidden="true">
+              <svg viewBox="0 0 48 48" width="48" height="48">
+                <path fill="#4285F4" d="M16 6h10L11 33H1z"/>
+                <path fill="#34A853" d="M16 6h10l16 27H31z"/>
+                <path fill="#FBBC04" d="M1 33h30l-5 9H6z"/>
+                <path fill="#188038" d="M31 33h11l-5 9H26z"/>
+              </svg>
+            </div>
+            <span class="drive-label">GOOGLE DRIVE</span>
+            <span class="drive-subtitle">Folder &amp; Documents</span>
+          </div>
+        </div>
 
         <div class="activity-body">
           <h3>
             ${href
-              ? `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(r.title)}</a>`
-              : esc(r.title)}
+              ? `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${title}</a>`
+              : title}
           </h3>
 
           <div class="activity-meta">
@@ -514,8 +558,9 @@ const sb = window.supabase.createClient(
           </div>
         </div>
       </div>`;
-    }).join("");
-  }
+  }).join("");
+}
+
 
   function screenDashboard() {
     return `<div class="spm-main">
