@@ -441,15 +441,22 @@ const sb = window.supabase.createClient(
       const id = esc(r.id);
 
       return `<div class="activity-card">
-        <div class="activity-image">
-          ${thumb
-            ? `<img
-                src="${esc(thumb)}"
-                alt="Pratonton ${esc(r.title)}"
-                loading="lazy"
-                data-thumb="1">`
-            : "G-DRIVE"}
+        
+      <div class="activity-image">
+        <div class="drive-preview">
+          <div class="drive-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="48" height="48">
+              <path fill="#4285F4" d="M16 6h10L11 33H1z"/>
+              <path fill="#34A853" d="M16 6h10l16 27H31z"/>
+              <path fill="#FBBC04" d="M1 33h30l-5 9H6z"/>
+              <path fill="#188038" d="M31 33h11l-5 9H26z"/>
+            </svg>
+          </div>
+          <span class="drive-label">GOOGLE DRIVE</span>
+          <span class="drive-subtitle">Folder &amp; Documents</span>
         </div>
+      </div>
+
 
         <div class="activity-body">
           <h3>
