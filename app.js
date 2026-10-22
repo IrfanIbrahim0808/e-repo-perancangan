@@ -30,7 +30,7 @@
   window.executeDelete = async () => {
     if (!pendingDeleteId) return;
     window.closeConfirmModal();
-    const { error } = await sb.from("resources").delete().eq("id", pendingDeleteId);
+    const { error } = await sb.from("resources").delete().eq("id", Number(pendingDeleteId));
     if (error) { showSiscAlert("Gagal memadam: " + error.message); return; }
     await loadResources(view.category);
     render();
