@@ -355,6 +355,36 @@ button:hover { transform: translateY(-1px); }
 }
 
 
+/* Nested folder cards */
+.folder-open {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.folder-open .activity-body {
+  padding-bottom: 12px;
+}
+
+.folder-open:hover h3 {
+  color: #00509e;
+}
+
+.folder-card {
+  overflow: hidden;
+}
+
+.folder-card > .activity-actions {
+  padding: 0 16px 16px;
+}
+
+
 /* Modals */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; z-index: 9999; }
 .modal-box { background: #fff; width: 100%; max-width: 440px; padding: 26px; border-radius: 16px; border-top: 5px solid var(--primary); }
