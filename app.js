@@ -227,6 +227,26 @@ const sb = window.supabase.createClient(
 
   // ---------- Navigation ----------
 
+  async function openFolder(folder) {
+    view = {
+      ...view,
+      screen: "dashboard",
+      folderId: folder.id
+    };
+  
+    searchQuery = "";
+    resources = [];
+    loading = true;
+    render();
+  
+    await loadResources(view.category);
+  
+    if (String(view.folderId) === String(folder.id)) {
+      render();
+    }
+  }
+
+  
   async function goCategory(cat) {
     view = {
   screen: "dashboard",
@@ -327,6 +347,16 @@ const sb = window.supabase.createClient(
       render();
     } else if (action === "cat") {
       goCategory(CATEGORIES[Number(el.dataset.i)]);
+    
+    } else if (action === "folder") {
+      const folder = resources.find(
+        r => String(r.id) === el.dataset.id
+      );
+
+      if (folder && folder.item_type === "folder") {
+        openFolder(folder);
+      }
+
     } else if (action === "add") {
       editingResource = null;
       view.showModal = true;
