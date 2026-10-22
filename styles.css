@@ -165,3 +165,23 @@ button:hover { transform: translateY(-1px); }
 .sisc-alert-box, .sisc-confirm-box { position: relative; background: #fff; padding: 24px; border-radius: 16px; width: 400px; z-index: 2; border: 1px solid var(--primary); text-align: center; }
 .sisc-alert-icon { display: none; }
 .home-footer { background: var(--primary-dark); color: #fff; text-align: center; padding: 20px; font-size: 12px; margin-top: auto; }
+/* ---- Fixes & additions ---- */
+button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--primary-light); outline-offset: 2px; }
+button:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+/* Kad kategori kini <button> */
+button.branch-card { font: inherit; width: 100%; }
+
+/* Bar log masuk */
+.auth-bar { display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding: 8px 20px; font-size: 12px; color: var(--muted); }
+.spm-crumb { padding: 12px 20px 0; }
+
+/* Dialog sistem */
+.sisc-alert-box, .sisc-confirm-box { width: 400px; max-width: 90vw; }
+.sisc-alert-title, .sisc-confirm-title { font-size: 16px; font-weight: 800; color: var(--primary); margin-bottom: 8px; }
+.sisc-alert-message, .sisc-confirm-message { font-size: 14px; color: var(--ink); margin-bottom: 18px; }
+.sisc-confirm-actions, .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.sisc-alert-ok, .btn-cancel-del, .btn-execute-del, .modal-actions button { padding: 8px 18px; font-size: 13px; font-weight: 700; }
+.sisc-alert-ok, .btn-cancel-del { color: var(--primary); border-color: var(--primary-light); }
+.btn-execute-del { background: var(--danger); color: #fff; border-color: var(--danger); }
+.modal-box { max-height: 90vh; overflow-y: auto; margin: 0 14px; }
