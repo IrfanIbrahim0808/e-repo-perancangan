@@ -1,7 +1,14 @@
 
 (function () {
-  const supabaseUrl = 'https://pqukdhyuxhitusvbevnc.supabase.co';
-  const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+  // e-Repo Perancangan — PPD Muar
+  // Versi ujian tanpa paparan log masuk.
+  // Akses database masih tertakluk kepada polisi Supabase RLS.
+
+  const supabaseUrl = "https://pqukdhyuxhitusvbevnc.supabase.co";
+
+  // Kekalkan anon/publishable key projek Supabase anda.
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxdWtkaHl1eGhpdHVzdmJldm5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1NDMxMjIsImV4cCI6MjEwODExOTEyMn0.A8oIrN8W05OG_91PRGO1GRMGfVRQJguBEQu6Ym43Dq8";
+
   const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
 
   const CATEGORIES = [
@@ -11,6 +18,7 @@
   ];
 
   const root = document.getElementById("spm-app");
+
   let view = { screen: "home" };
   let resources = [];
   let searchQuery = "";
@@ -19,13 +27,20 @@
   let loading = false;
   let loadToken = 0;
   let saving = false;
-  let session = null;
+  let deleting = false;
 
-  const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;",
-    '"': "&quot;", "'": "&#39;"
-  }[m]));
+  // ---------- Helpers ----------
 
+  const esc = s =>
+    String(s ?? "").replace(/[&<>"']/g, m => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[m]));
+
+  // Hanya benarkan URL http dan https.
   const safeUrl = u => {
     try {
       const x = new URL(String(u).trim());
@@ -37,22 +52,31 @@
 
   function getDriveThumbnailUrl(driveUrl) {
     if (!safeUrl(driveUrl)) return null;
+
     const match =
       driveUrl.match(/[?&]id=([^&]+)/) ||
-      driveUrl.match(/\/(?:file|document|spreadsheets|presentation)\/d\/([^/?#]+)/);
+      driveUrl.match(
+        /\/(?:file|document|spreadsheets|presentation)\/d\/([^/?#]+)/
+      );
 
     return match && match[1]
       ? `https://drive.google.com/thumbnail?id=${encodeURIComponent(match[1])}&sz=w600`
       : null;
   }
 
+  // ---------- System messages ----------
+
   window.showSiscAlert = msg => {
-    document.getElementById("siscAlertText").innerText = msg;
-    document.getElementById("siscSystemAlert").classList.add("show");
+    const text = document.getElementById("siscAlertText");
+    const box = document.getElementById("siscSystemAlert");
+
+    if (text) text.innerText = msg;
+    if (box) box.classList.add("show");
   };
 
   window.closeSiscAlert = () => {
-    document.getElementById("siscSystemAlert").classList.remove("show");
+    const box = document.getElementById("siscSystemAlert");
+    if (box) box.classList.remove("show");
   };
 
   const requestDelete = id => {
@@ -65,35 +89,54 @@
     document.getElementById("siscConfirmModal").classList.remove("show");
   };
 
+  // ---------- Delete resource ----------
+
   window.executeDelete = async () => {
-    if (pendingDeleteId === null || !session) return;
+    if (pendingDeleteId === null || deleting) return;
 
     const id = pendingDeleteId;
+    deleting = true;
     window.closeConfirmModal();
 
-    const { data, error } = await sb
-      .from("resources")
-      .delete()
-      .eq("id", id)
-      .select();
+    try {
+      const { data, error } = await sb
+        .from("resources")
+        .delete()
+        .eq("id", id)
+        .select();
 
-    if (error) {
-      showSiscAlert("Gagal memadam: " + error.message);
-      return;
+      if (error) {
+        showSiscAlert("Gagal memadam: " + error.message);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        showSiscAlert(
+          "Tiada rekod dipadam. Semak polisi kebenaran Supabase (RLS) atau pastikan rekod masih wujud."
+        );
+        return;
+      }
+
+      await loadResources(view.category);
+      render();
+    } catch (error) {
+      showSiscAlert(
+        "Ralat semasa memadam: " +
+        (error.message || "Sila cuba lagi.")
+      );
+    } finally {
+      deleting = false;
     }
-
-    if (!data || !data.length) {
-      showSiscAlert("Tiada kebenaran untuk memadam, atau rekod sudah tiada.");
-      return;
-    }
-
-    await loadResources(view.category);
-    render();
   };
 
+  // ---------- Database ----------
+
   async function loadResources(category) {
+    if (!category) return;
+
     const token = ++loadToken;
     loading = true;
+    render();
 
     try {
       const { data, error } = await sb
@@ -105,18 +148,24 @@
       if (token !== loadToken) return;
 
       if (error) {
-        showSiscAlert("Ralat pangkalan data: " + error.message);
         resources = [];
-      } else {
-        resources = data || [];
+        showSiscAlert("Ralat pangkalan data: " + error.message);
+        return;
       }
+
+      resources = data || [];
     } catch (error) {
       if (token === loadToken) {
         resources = [];
-        showSiscAlert("Gagal memuatkan data. Sila semak sambungan internet.");
+        showSiscAlert(
+          "Tidak dapat memuatkan rekod: " +
+          (error.message || "Semak sambungan internet anda.")
+        );
       }
     } finally {
-      if (token === loadToken) loading = false;
+      if (token === loadToken) {
+        loading = false;
+      }
     }
   }
 
@@ -129,30 +178,56 @@
       uploaded_by: fields.author || "Staf Perancangan"
     };
 
-    const q = editingResource
-      ? sb.from("resources").update(payload).eq("id", editingResource.id)
-      : sb.from("resources").insert(payload);
+    try {
+      let query;
 
-    const { data, error } = await q.select();
+      if (editingResource) {
+        query = sb
+          .from("resources")
+          .update(payload)
+          .eq("id", editingResource.id);
+      } else {
+        query = sb
+          .from("resources")
+          .insert(payload);
+      }
 
-    if (error) {
+      const { data, error } = await query.select();
+
+      if (error) {
+        showSiscAlert(
+          (editingResource
+            ? "Gagal mengemaskini: "
+            : "Gagal menambah: ") + error.message
+        );
+        return false;
+      }
+
+      if (!data || data.length === 0) {
+        showSiscAlert(
+          "Tiada rekod disimpan. Semak polisi kebenaran Supabase (RLS)."
+        );
+        return false;
+      }
+
+      return true;
+    } catch (error) {
       showSiscAlert(
-        (editingResource ? "Gagal kemaskini: " : "Gagal menambah: ") +
-        error.message
+        "Ralat semasa menyimpan: " +
+        (error.message || "Sila cuba lagi.")
       );
       return false;
     }
-
-    if (!data || !data.length) {
-      showSiscAlert("Tiada rekod dikembalikan. Semak kebenaran Supabase.");
-      return false;
-    }
-
-    return true;
   }
 
+  // ---------- Navigation ----------
+
   async function goCategory(cat) {
-    view = { screen: "dashboard", category: cat };
+    view = {
+      screen: "dashboard",
+      category: cat
+    };
+
     searchQuery = "";
     resources = [];
     loading = true;
@@ -163,8 +238,10 @@
     if (view.category === cat) render();
   }
 
+  // ---------- Add / Edit ----------
+
   async function onSave(btn) {
-    if (saving || !session) return;
+    if (saving) return;
 
     const title = document.getElementById("f-title").value.trim();
     const link = document.getElementById("f-link").value.trim();
@@ -177,8 +254,14 @@
     }
 
     const url = safeUrl(link);
+
     if (!url) {
-      showSiscAlert("Pautan mesti bermula dengan https://");
+      showSiscAlert("Pautan mesti bermula dengan https:// atau http://");
+      return;
+    }
+
+    if (year && !Number.isInteger(Number(year))) {
+      showSiscAlert("Sila masukkan tahun yang sah.");
       return;
     }
 
@@ -187,130 +270,111 @@
     btn.textContent = "Menyimpan...";
 
     try {
-      const ok = await saveResource({ title, link: url, year, author });
+      const ok = await saveResource({
+        title,
+        link: url,
+        year,
+        author
+      });
+
       if (!ok) return;
 
       view.showModal = false;
       editingResource = null;
+
       await loadResources(view.category);
       render();
-    } catch (error) {
-      showSiscAlert("Ralat semasa menyimpan: " + error.message);
     } finally {
       saving = false;
-      if (btn.isConnected) {
-        btn.disabled = false;
-        btn.textContent = "Simpan";
+
+      // Jika modal masih terbuka, benarkan pengguna cuba semula.
+      const saveButton = document.querySelector('[data-action="save"]');
+
+      if (saveButton) {
+        saveButton.disabled = false;
+        saveButton.textContent = "Simpan";
       }
     }
   }
 
-  async function onLogin(btn) {
-    const email = document.getElementById("l-email").value.trim();
-    const password = document.getElementById("l-pass").value;
-
-    if (!email || !password) {
-      showSiscAlert("Sila isi e-mel dan kata laluan.");
-      return;
-    }
-
-    btn.disabled = true;
-
-    try {
-      const { error } = await sb.auth.signInWithPassword({ email, password });
-
-      if (error) {
-        showSiscAlert("Log masuk gagal: " + error.message);
-        return;
-      }
-
-      view.showLogin = false;
-      render();
-    } catch (error) {
-      showSiscAlert("Ralat log masuk: " + error.message);
-    } finally {
-      if (btn.isConnected) btn.disabled = false;
-    }
-  }
+  // ---------- Event delegation ----------
 
   root.addEventListener("click", e => {
     const el = e.target.closest("[data-action]");
     if (!el) return;
 
-    const a = el.dataset.action;
+    const action = el.dataset.action;
 
-    if (a === "overlay") {
+    if (action === "overlay") {
       if (e.target === el) {
         view.showModal = false;
-        view.showLogin = false;
         render();
       }
       return;
     }
 
-    if (a === "home") {
+    if (action === "home") {
       loadToken++;
       loading = false;
       view = { screen: "home" };
+      searchQuery = "";
       render();
-    } else if (a === "cat") {
+    } else if (action === "cat") {
       goCategory(CATEGORIES[Number(el.dataset.i)]);
-    } else if (a === "add") {
-      if (!session) return;
+    } else if (action === "add") {
       editingResource = null;
       view.showModal = true;
       render();
-    } else if (a === "edit") {
+    } else if (action === "edit") {
       editingResource =
         resources.find(r => String(r.id) === el.dataset.id) || null;
-      view.showModal = !!editingResource;
+
+      if (!editingResource) {
+        showSiscAlert("Rekod tidak dijumpai. Sila muat semula halaman.");
+        return;
+      }
+
+      view.showModal = true;
       render();
-    } else if (a === "del") {
-      if (!session) return;
+    } else if (action === "del") {
       requestDelete(el.dataset.id);
-    } else if (a === "close-modal") {
+    } else if (action === "close-modal") {
       view.showModal = false;
-      view.showLogin = false;
+      editingResource = null;
       render();
-    } else if (a === "save") {
+    } else if (action === "save") {
       onSave(el);
-    } else if (a === "login-open") {
-      view.showLogin = true;
-      render();
-    } else if (a === "login") {
-      onLogin(el);
-    } else if (a === "logout") {
-      sb.auth.signOut().then(({ error }) => {
-        if (error) showSiscAlert("Gagal log keluar: " + error.message);
-      });
     }
   });
+
+  // ---------- Search ----------
 
   root.addEventListener("input", e => {
     if (e.target.id !== "search") return;
 
     searchQuery = e.target.value;
+
     const gallery = document.getElementById("gallery");
     if (gallery) gallery.innerHTML = galleryHtml();
   });
 
+  // Thumbnail rosak: paparkan teks G-DRIVE.
   root.addEventListener("error", e => {
-    if (e.target.tagName === "IMG" && e.target.dataset.thumb) {
+    if (
+      e.target.tagName === "IMG" &&
+      e.target.dataset.thumb
+    ) {
       e.target.parentNode.textContent = "G-DRIVE";
     }
   }, true);
 
-  sb.auth.onAuthStateChange((_event, s) => {
-    const was = !!session;
-    session = s;
-    if (was !== !!s) render();
-  });
+  // ---------- UI ----------
 
   function header() {
     return `<header class="header">
-      <div class="carousel-slide" style="background-image:url('bg-1.jpg');animation-delay:0s;"></div>
-      <div class="carousel-slide" style="background-image:url('bg-2.jpg');animation-delay:5s;"></div>
-      <div class="carousel-slide" style="background-image:url('bg-3.jpg');animation-delay:10s;"></div>
+      <div class="carousel-slide" style="background-image: url('bg-1.jpg'); animation-delay: 0s;"></div>
+      <div class="carousel-slide" style="background-image: url('bg-2.jpg'); animation-delay: 5s;"></div>
+      <div class="carousel-slide" style="background-image: url('bg-3.jpg'); animation-delay: 10s;"></div>
       <div class="carousel-overlay"></div>
       <div class="header-content">
         <img src="logo-ppd.png" alt="Logo Rasmi PPD Muar" class="header-logo">
@@ -320,10 +384,9 @@
     </header>`;
   }
 
+  // Tiada bar log masuk dalam versi ujian ini.
   function authBar() {
-    return `<div class="auth-bar">${session
-      ? `<span>${esc(session.user.email)}</span><button class="btn-nav" data-action="logout">Log Keluar</button>`
-      : `<button class="btn-nav" data-action="login-open">Log Masuk Staf</button>`}</div>`;
+    return "";
   }
 
   function crumb() {
@@ -331,8 +394,8 @@
 
     return `<div class="spm-crumb">
       <button class="btn-nav" data-action="home">🏠 Utama</button>
-      <span class="sep" style="margin-left:10px;">/</span>
-      <span style="font-weight:600;color:var(--primary);">${esc(view.category)}</span>
+      <span class="sep" style="margin-left: 10px;">/</span>
+      <span style="font-weight: 600; color: var(--primary);">${esc(view.category)}</span>
     </div>`;
   }
 
@@ -343,17 +406,26 @@
         <p>Pusat repositori fail berpusat untuk pengurusan data, pelan strategik, dan infrastruktur pendidikan PPD Muar.</p>
       </div>
       <div class="cards-grid">
-        ${CATEGORIES.map((c, i) =>
-          `<button type="button" class="branch-card" data-action="cat" data-i="${i}"><h3>${esc(c)}</h3></button>`
-        ).join("")}
+        ${CATEGORIES.map((category, i) => `
+          <button
+            type="button"
+            class="branch-card"
+            data-action="cat"
+            data-i="${i}">
+            <h3>${esc(category)}</h3>
+          </button>
+        `).join("")}
       </div>
     </div>`;
   }
 
   function galleryHtml() {
-    if (loading) return `<div class="activity-empty">Memuatkan...</div>`;
+    if (loading) {
+      return `<div class="activity-empty">Memuatkan...</div>`;
+    }
 
     const q = searchQuery.toLowerCase();
+
     const filtered = resources.filter(r =>
       String(r.title ?? "").toLowerCase().includes(q)
     );
@@ -370,24 +442,30 @@
       return `<div class="activity-card">
         <div class="activity-image">
           ${thumb
-            ? `<img src="${esc(thumb)}" alt="Pratonton ${esc(r.title)}" loading="lazy" data-thumb="1">`
+            ? `<img
+                src="${esc(thumb)}"
+                alt="Pratonton ${esc(r.title)}"
+                loading="lazy"
+                data-thumb="1">`
             : "G-DRIVE"}
         </div>
+
         <div class="activity-body">
-          <h3>${href
-            ? `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(r.title)}</a>`
-            : esc(r.title)}
+          <h3>
+            ${href
+              ? `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(r.title)}</a>`
+              : esc(r.title)}
           </h3>
+
           <div class="activity-meta">
             ${r.year ? `Tahun: ${esc(r.year)}<br>` : ""}
-            Oleh: ${esc(r.uploaded_by)}
+            Oleh: ${esc(r.uploaded_by || "Staf Perancangan")}
           </div>
-          ${session
-            ? `<div class="activity-actions">
-                <button type="button" data-action="edit" data-id="${id}">Edit</button>
-                <button type="button" class="btn-del" data-action="del" data-id="${id}">Padam</button>
-              </div>`
-            : ""}
+
+          <div class="activity-actions">
+            <button type="button" data-action="edit" data-id="${id}">Edit</button>
+            <button type="button" class="btn-del" data-action="del" data-id="${id}">Padam</button>
+          </div>
         </div>
       </div>`;
     }).join("");
@@ -396,13 +474,27 @@
   function screenDashboard() {
     return `<div class="spm-main">
       <div class="toolbar">
-        <div class="toolbar-title"><h2>${esc(view.category)}</h2></div>
+        <div class="toolbar-title">
+          <h2>${esc(view.category)}</h2>
+        </div>
+
         <div>
-          <input id="search" class="search-input" placeholder="Cari..." value="${esc(searchQuery)}" aria-label="Cari tajuk">
-          ${session ? `<button type="button" class="btn-add" data-action="add">+ Tambah</button>` : ""}
+          <input
+            id="search"
+            class="search-input"
+            placeholder="Cari..."
+            value="${esc(searchQuery)}"
+            aria-label="Cari tajuk">
+
+          <button type="button" class="btn-add" data-action="add">
+            + Tambah
+          </button>
         </div>
       </div>
-      <div class="activity-gallery" id="gallery">${galleryHtml()}</div>
+
+      <div class="activity-gallery" id="gallery">
+        ${galleryHtml()}
+      </div>
     </div>`;
   }
 
@@ -412,10 +504,35 @@
     return `<div class="modal-overlay" data-action="overlay">
       <div class="modal-box">
         <h3>${r ? "KEMASKINI" : "TAMBAH"} PAUTAN</h3>
-        <div class="modal-field"><label for="f-title">Tajuk</label><input id="f-title" value="${esc(r?.title)}"></div>
-        <div class="modal-field"><label for="f-link">Pautan Drive</label><input id="f-link" value="${esc(r?.link)}" placeholder="https://"></div>
-        <div class="modal-field"><label for="f-year">Tahun</label><input id="f-year" type="number" value="${esc(r?.year)}"></div>
-        <div class="modal-field"><label for="f-author">Dimuat Naik Oleh</label><input id="f-author" value="${esc(r?.uploaded_by)}"></div>
+
+        <div class="modal-field">
+          <label for="f-title">Tajuk</label>
+          <input id="f-title" value="${esc(r?.title)}">
+        </div>
+
+        <div class="modal-field">
+          <label for="f-link">Pautan Drive</label>
+          <input
+            id="f-link"
+            value="${esc(r?.link)}"
+            placeholder="https://">
+        </div>
+
+        <div class="modal-field">
+          <label for="f-year">Tahun</label>
+          <input
+            id="f-year"
+            type="number"
+            value="${esc(r?.year)}">
+        </div>
+
+        <div class="modal-field">
+          <label for="f-author">Dimuat Naik Oleh</label>
+          <input
+            id="f-author"
+            value="${esc(r?.uploaded_by)}">
+        </div>
+
         <div class="modal-actions">
           <button type="button" data-action="close-modal">Batal</button>
           <button type="button" class="btn-save" data-action="save">Simpan</button>
@@ -424,31 +541,24 @@
     </div>`;
   }
 
-  function loginModal() {
-    return `<div class="modal-overlay" data-action="overlay">
-      <div class="modal-box">
-        <h3>LOG MASUK STAF</h3>
-        <div class="modal-field"><label for="l-email">E-mel</label><input id="l-email" type="email" autocomplete="username"></div>
-        <div class="modal-field"><label for="l-pass">Kata laluan</label><input id="l-pass" type="password" autocomplete="current-password"></div>
-        <div class="modal-actions">
-          <button type="button" data-action="close-modal">Batal</button>
-          <button type="button" class="btn-save" data-action="login">Log Masuk</button>
-        </div>
-      </div>
-    </div>`;
-  }
+  // ---------- Initialise website ----------
 
-  root.innerHTML = header() +
+  root.innerHTML =
+    header() +
     `<div id="spm-view"></div>` +
-    `<footer class="home-footer"><strong>SEKTOR PERANCANGAN — PPD MUAR</strong></footer>`;
+    `<footer class="home-footer">
+      <strong>SEKTOR PERANCANGAN — PPD MUAR</strong>
+    </footer>`;
 
   function render() {
-    document.getElementById("spm-view").innerHTML =
+    const target = document.getElementById("spm-view");
+    if (!target) return;
+
+    target.innerHTML =
       authBar() +
       crumb() +
       (view.screen === "home" ? screenHome() : screenDashboard()) +
-      (view.showModal ? modal() : "") +
-      (view.showLogin ? loginModal() : "");
+      (view.showModal ? modal() : "");
   }
 
   render();
