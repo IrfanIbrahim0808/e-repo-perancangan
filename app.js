@@ -49,19 +49,28 @@
     resources = data;
   }
 
-  async function saveResource(fields) {
-    const payload = { category: view.category, title: fields.title, link: fields.link, year: fields.year ? Number(fields.year) : null, uploaded_by: fields.author || "Staf Perancangan" };
-    if (editingResource) {
-      const { error } = await sb.from("resources").update(payload).eq("id", editingResource.id);
-      if (error) { showSiscAlert("Gagal kemaskini."); return; }
-    } else {
-      const { error } = await sb.from("resources").insert(payload);
-      if (error) { showSiscAlert("Gagal menambah."); return; }
-    }
-    editingResource = null;
-    await loadResources(view.category);
-    render();
+async function saveResource(fields) {
+  const payload = { 
+    category: view.category, 
+    title: fields.title, 
+    link: fields.link, 
+    year: fields.year ? Number(fields.year) : null, 
+    uploaded_by: fields.author || "Staf Perancangan" 
+  };
+
+  if (editingResource) {
+    const { error } = await sb.from("resources").update(payload).eq("id", editingResource.id);
+    if (error) { showSiscAlert("Gagal kemaskini."); return; }
+  } else {
+    // Added .select() so Supabase returns the new row with its auto-generated 'id'
+    const { data, error } = await sb.from("resources").insert(payload).select();
+    if (error) { showSiscAlert("Gagal menambah."); return; }
   }
+
+  editingResource = null;
+  await loadResources(view.category);
+  render();
+}
 
   // ---------- Navigation ----------
   window.__spmGoHome = () => { view = { screen: "home" }; render(); };
