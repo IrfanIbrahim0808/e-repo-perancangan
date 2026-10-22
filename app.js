@@ -474,14 +474,64 @@ async function saveResource(fields) {
     return "";
   }
 
-  function crumb() {
-    if (view.screen === "home") return "";
+  
+function crumb() {
+  if (view.screen === "home") return "";
 
-    return `<div class="spm-crumb">
-      <button class="btn-nav" data-action="home">🏠 Utama</button>
-      <span class="sep" style="margin-left: 10px;">/</span>
-      <span style="font-weight: 600; color: var(--primary);">${esc(view.category)}</span>
-    </div>`;
+  // Find the current folder and its parent folders.
+  const folderPath = [];
+  let currentFolder = resources.find(
+    r => String(r.id) === String(view.folderId)
+  );
+
+  while (currentFolder) {
+    folderPath.unshift(currentFolder);
+
+    if (currentFolder.parent_id == null) break;
+
+    currentFolder = resources.find(
+      r => String(r.id) === String(currentFolder.parent_id)
+    );
+  }
+
+  const categoryIndex = CATEGORIES.indexOf(view.category);
+
+    return `
+      <div class="spm-crumb">
+        <div class="crumb-navigation">
+          ${
+            view.folderId != null
+              ? `<button class="btn-nav" data-action="parent">
+                   ← Kembali
+                 </button>`
+              : ""
+          }
+  
+          <button class="btn-nav" data-action="home">
+            🏠 Utama
+          </button>
+  
+          <span class="sep">/</span>
+  
+          <button
+            class="crumb-link"
+            data-action="cat"
+            data-i="${categoryIndex}">
+            ${esc(view.category)}
+          </button>
+  
+          ${folderPath.map(folder => `
+            <span class="sep">/</span>
+            <button
+              class="crumb-link"
+              data-action="open-crumb"
+              data-id="${esc(folder.id)}">
+              ${esc(folder.title)}
+            </button>
+          `).join("")}
+        </div>
+      </div>
+    `;
   }
 
   function screenHome() {
