@@ -20,7 +20,11 @@ const sb = window.supabase.createClient(
 
   const root = document.getElementById("spm-app");
 
-  let view = { screen: "home" };
+  let view = {
+  screen: "home",
+  category: null,
+  folderId: null
+  };
   let resources = [];
   let searchQuery = "";
   let editingResource = null;
@@ -225,9 +229,10 @@ const sb = window.supabase.createClient(
 
   async function goCategory(cat) {
     view = {
-      screen: "dashboard",
-      category: cat
-    };
+  screen: "dashboard",
+  category: cat,
+  folderId: null
+};
 
     searchQuery = "";
     resources = [];
