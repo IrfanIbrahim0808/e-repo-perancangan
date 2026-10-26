@@ -58,13 +58,18 @@ button:hover { transform: translateY(-1px); }
 }
 .header p { margin: 0; color: #eef2f5; font-size: 14px; letter-spacing: .5px; }
 
+
 .header-logo {
-  width: 280px; 
+  width: 140px;
+  max-width: 100%;
   height: auto;
-  display: block; /* Removes default invisible space under images */
-  margin: 0 auto -20px; /* The -20px forcefully pulls the text up closer */
-  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); 
+  max-height: 140px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 12px;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
 }
+
 
 /* Carousel Background Layers */
 .carousel-overlay {
