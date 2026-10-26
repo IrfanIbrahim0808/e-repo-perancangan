@@ -493,7 +493,7 @@ else if (action === "folder") {
       <div class="carousel-slide" style="background-image: url('bg-3.jpg'); animation-delay: 10s;"></div>
       <div class="carousel-overlay"></div>
       <div class="header-content">
-        <img src="logo-ppd.png" alt="Logo Rasmi PPD Muar" class="header-logo">
+        <img src="logo-ppd.png?v=2" alt="Logo Rasmi PPD Muar" class="header-logo">
         <h1>SEKTOR PERANCANGAN</h1>
         <p>Pejabat Pendidikan Daerah Muar</p>
       </div>
