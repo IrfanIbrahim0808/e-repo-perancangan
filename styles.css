@@ -63,13 +63,13 @@ button:hover { transform: translateY(-1px); }
 
 
 .header-logo {
-  width: 220px;
-  max-width: 100%;
+  width: 320px;
+  max-width: 90%;
   height: auto;
-  max-height: 180px;
+  max-height: none;
   object-fit: contain;
   display: block;
-  margin: 0 auto 8px;
+  margin: 0 auto 4px;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
 }
 
@@ -391,6 +391,13 @@ button:hover { transform: translateY(-1px); }
 
 .folder-card > .activity-actions {
   padding: 0 16px 16px;
+}
+
+
+.header .header-content .header-logo {
+  width: 320px !important;
+  max-width: 90% !important;
+  max-height: none !important;
 }
 
 
