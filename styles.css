@@ -61,9 +61,6 @@ button:hover { transform: translateY(-1px); }
 .header p { margin: 0; color: #eef2f5; font-size: 14px; letter-spacing: .5px; }
 
 
-
-
-
 .header-logo {
   width: 300px;
   max-width: 95%;
@@ -74,8 +71,6 @@ button:hover { transform: translateY(-1px); }
   margin: 0 auto 8px;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
 }
-
-
 
 
 /* Carousel Background Layers */
