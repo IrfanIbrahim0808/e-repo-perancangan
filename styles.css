@@ -63,14 +63,15 @@ button:hover { transform: translateY(-1px); }
 
 
 
+
 .header-logo {
-  width: 450px !important;
-  max-width: 95% !important;
-  height: auto !important;
-  max-height: none !important;
+  width: 300px;
+  max-width: 95%;
+  height: auto;
+  max-height: none;
   object-fit: contain;
   display: block;
-  margin: 0 auto 4px;
+  margin: 0 auto 8px;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
 }
 
