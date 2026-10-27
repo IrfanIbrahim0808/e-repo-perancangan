@@ -33,15 +33,17 @@ button:hover { transform: translateY(-1px); }
 }
 
 /* Header Base */
+
 .header {
-  position: relative; 
-  overflow: hidden; 
-  color: var(--cream-soft); 
-  padding: 35px 22px 30px; 
-  text-align: center; 
+  position: relative;
+  overflow: hidden;
+  color: var(--cream-soft);
+  padding: 24px 22px 26px;
+  text-align: center;
   box-shadow: 0 8px 25px rgba(0, 80, 158, .22);
   background-color: var(--primary-dark);
 }
+
 
 .header-content {
   position: relative;
